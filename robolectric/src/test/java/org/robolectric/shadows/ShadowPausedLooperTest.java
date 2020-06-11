@@ -22,6 +22,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -334,6 +335,18 @@ public class ShadowPausedLooperTest {
     } catch (IllegalStateException e) {
       // expected
     }
+  }
+
+  @Test
+  public void resetter_allowsStaticHandlerThreadsToBeReused() throws Exception {
+    Handler handler = new Handler(handlerThread.getLooper());
+    CountDownLatch countDownLatch1 = new CountDownLatch(1);
+    handler.post(countDownLatch1::countDown);
+    assertThat(countDownLatch1.await(30, TimeUnit.SECONDS)).isTrue();
+    ShadowPausedLooper.resetLoopers();
+    CountDownLatch countDownLatch2 = new CountDownLatch(1);
+    handler.post(countDownLatch2::countDown);
+    assertThat(countDownLatch2.await(30, TimeUnit.SECONDS)).isTrue();
   }
 
   private static class BlockingRunnable implements Runnable {
