@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -83,6 +84,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private boolean inMultiWindowMode = false;
   private IntentSenderRequest lastIntentSenderRequest;
   private boolean throwIntentSenderException;
+  private boolean hasReportedFullyDrawn = false;
 
   public void setApplication(Application application) {
     reflector(_Activity_.class, realActivity).setApplication(application);
@@ -339,6 +341,15 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     lastIntentSenderRequest =
         new IntentSenderRequest(
             intentSender, requestCode, fillInIntent, flagsMask, flagsValues, extraFlags, options);
+  }
+
+  @Implementation(minSdk = KITKAT)
+  public void reportFullyDrawn() {
+    hasReportedFullyDrawn = true;
+  }
+
+  public boolean getReportFullyDrawn() {
+    return hasReportedFullyDrawn;
   }
 
   /**
